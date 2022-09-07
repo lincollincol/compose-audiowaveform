@@ -1,27 +1,30 @@
 package com.linc.audiowaveform
 
 import android.view.MotionEvent
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.requiredHeight
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.BlendMode
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.*
+import androidx.compose.ui.graphics.drawscope.DrawStyle
+import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.times
+import com.linc.audiowaveform.model.AmplitudeType
 import com.linc.audiowaveform.model.WaveformAlignment
+import kotlinx.coroutines.launch
+
+const val MinProgress: Float = 0F
+const val MaxProgress: Float = 1F
 
 const val MinSpikeHeight: Float = 1F
 const val DefaultGraphicsLayerAlpha: Float = 0.99F
@@ -30,30 +33,34 @@ const val DefaultGraphicsLayerAlpha: Float = 0.99F
 @Composable
 fun AudioWaveform(
     modifier: Modifier = Modifier,
-    waveformBrush: Brush = Brush.linearGradient(listOf(Color.White, Color.White)),
-    progressBrush: Brush = Brush.linearGradient(listOf(Color.Blue, Color.Blue)),
+    style: DrawStyle = Fill,
+    waveformBrush: Brush = SolidColor(Color.White),
+    progressBrush: Brush = SolidColor(Color.Blue),
     waveformAlignment: WaveformAlignment = WaveformAlignment.Center,
+    amplitudeType: AmplitudeType = AmplitudeType.Avg,
+    spikeAnimationSpec: AnimationSpec<Float> = tween(500),
     spikeWidth: Dp = 4.dp,
     spikeRadius: Dp = 2.dp,
     spikePadding: Dp = 1.dp,
     progress: Float = 0F,
-    samples: List<Int>,
+    amplitudes: List<Int>,
     onProgressChanged: (Float) -> Unit
 ) {
     var canvasSize by remember { mutableStateOf(Size(0f, 0f)) }
     var spikes by remember { mutableStateOf(0F) }
-    val amplitudes = remember(samples, spikes) {
-        getWaveformAmplitudes(
-            samples = samples,
+    val pixelAmplitudes = remember(amplitudes, spikes, amplitudeType) {
+        getPixelAmplitudes(
+            amplitudeType = amplitudeType,
+            amplitudes = amplitudes,
             spikes = spikes.toInt(),
             minHeight = MinSpikeHeight,
             maxHeight = canvasSize.height.coerceAtLeast(MinSpikeHeight)
         )
-    }
+    }.map { animateFloatAsState(it, spikeAnimationSpec).value }
     Canvas(
         modifier = Modifier
             .fillMaxWidth()
-            .requiredHeight(72.dp)
+            .requiredHeight(48.dp)
             .graphicsLayer(alpha = DefaultGraphicsLayerAlpha)
             .pointerInteropFilter {
                 when (it.action) {
@@ -71,7 +78,7 @@ fun AudioWaveform(
     ) {
         canvasSize = size
         spikes = size.width / (spikeWidth.toPx() + spikePadding.toPx())
-        amplitudes.forEachIndexed { index, amplitude ->
+        pixelAmplitudes.forEachIndexed { index, amplitude ->
             drawRoundRect(
                 brush = waveformBrush,
                 topLeft = Offset(
@@ -84,26 +91,37 @@ fun AudioWaveform(
                 ),
                 size = Size(spikeWidth.toPx(), amplitude),
                 cornerRadius = CornerRadius(spikeRadius.toPx(), spikeRadius.toPx()),
+                style = style
             )
             drawRect(
                 brush = progressBrush,
-                size = Size(progress * size.width, size.height),
+                size = Size(
+                    width = progress.coerceIn(MinProgress, MaxProgress) * size.width,
+                    height = size.height
+                ),
                 blendMode = BlendMode.SrcAtop
             )
         }
     }
 }
 
-private fun getWaveformAmplitudes(
-    samples: List<Int>,
+private fun getPixelAmplitudes(
+    amplitudeType: AmplitudeType,
+    amplitudes: List<Int>,
     spikes: Int,
     minHeight: Float,
-    maxHeight: Float,
+    maxHeight: Float
 ): List<Float> {
     return when {
-        samples.isEmpty() || samples.count() < spikes || spikes == 0 -> List(spikes) { minHeight }
-        else -> samples
-            .chunked(samples.count() / spikes)
-            .map { (it.average().toFloat() * 2).coerceIn(minHeight, maxHeight) }
+        amplitudes.isEmpty() || spikes == 0 -> List(spikes) { minHeight }
+        amplitudes.count() < spikes -> amplitudes.map(Int::toFloat)
+        else -> amplitudes.chunked(amplitudes.count() / spikes)
+            .map {
+                when(amplitudeType) {
+                    AmplitudeType.Avg -> it.average()
+                    AmplitudeType.Max -> it.max()
+                    AmplitudeType.Min -> it.min()
+                }.toFloat().times(2).coerceIn(minHeight, maxHeight)
+            }
     }
 }
