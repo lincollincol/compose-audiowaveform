@@ -5,15 +5,15 @@ import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.linc.audiowaveform.AudioWaveform
+import com.linc.audiowaveform.sample.R
 import com.linc.audiowaveform.sample.ui.screen.waveform.model.AudioWaveformUiState
 import com.linc.audiowaveform.sample.ui.theme.ComposeaudiowaveformTheme
 
@@ -38,6 +38,7 @@ fun AudioWaveformScreen(
     onPlayClicked: () -> Unit,
     onProgressChanged: (Float) -> Unit,
 ) {
+    val playButtonIcon = if(uiState.isPlaying) R.drawable.ic_pause else R.drawable.ic_play
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
@@ -67,7 +68,7 @@ fun AudioWaveformScreen(
                 onClick = onPlayClicked
             ) {
                 Icon(
-                    imageVector = Icons.Default.PlayArrow,
+                    painter = painterResource(id = playButtonIcon),
                     contentDescription = null
                 )
             }
