@@ -15,7 +15,7 @@ fun LocalAudio.toUiState(
     onClick: () -> Unit
 ) = SingleAudioUiState(
     id = id,
-    displayName = displayName,
+    displayName = name,
     size = duration.formatAsAudioDuration + " | " + size.formatAsFileSize,
     onClick = onClick
 )

@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -14,10 +15,21 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
+import androidx.paging.PagingData
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.items
+import androidx.paging.filter
+import androidx.paging.map
 import com.linc.audiowaveform.sample.R
+import com.linc.audiowaveform.sample.model.LocalAudio
 import com.linc.audiowaveform.sample.ui.screen.list.model.AudioListUiState
 import com.linc.audiowaveform.sample.ui.screen.list.model.SingleAudioUiState
 import com.linc.audiowaveform.sample.ui.theme.ComposeaudiowaveformTheme
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 
 @Composable
 fun AudioListRoute(
@@ -28,13 +40,15 @@ fun AudioListRoute(
         viewModel.navDestination?.let(navController::navigate)
         viewModel.clearNavDestination()
     }
-    AudioListScreen(viewModel.uiState)
+    AudioListScreen(viewModel.audioItemsUiState)
 }
 
 @Composable
 fun AudioListScreen(
-    uiState: AudioListUiState
+    audioItemsUiState: Flow<PagingData<SingleAudioUiState>>,
 ) {
+    val audioLazyItemsState = audioItemsUiState.collectAsLazyPagingItems()
+
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
@@ -42,8 +56,8 @@ fun AudioListScreen(
             contentPadding = PaddingValues(horizontal = 4.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            items(items = uiState.audioFiles, key = { it.id }) {
-                AudioItem(itemState = it)
+            items(items = audioLazyItemsState, key = { it.id }) { item ->
+                item?.let { AudioItem(itemState = it) }
             }
         }
     }
@@ -112,7 +126,7 @@ private fun AudioItemPreview() {
 private fun AudioListScreenPreview() {
     ComposeaudiowaveformTheme {
         AudioListScreen(
-            uiState = AudioListUiState()
+            audioItemsUiState = flowOf()
         )
     }
 }

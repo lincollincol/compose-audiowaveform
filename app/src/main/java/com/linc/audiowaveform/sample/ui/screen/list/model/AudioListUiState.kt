@@ -1,5 +1,8 @@
 package com.linc.audiowaveform.sample.ui.screen.list.model
 
+import androidx.paging.PagingData
+import androidx.paging.compose.LazyPagingItems
+
 data class AudioListUiState(
-    val audioFiles: List<SingleAudioUiState> = emptyList()
+    val audioFiles: PagingData<SingleAudioUiState> = PagingData.empty()
 )

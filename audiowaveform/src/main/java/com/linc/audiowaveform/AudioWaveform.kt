@@ -17,17 +17,25 @@ import androidx.compose.ui.graphics.drawscope.DrawStyle
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.coerceIn
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.times
 import com.linc.audiowaveform.model.AmplitudeType
 import com.linc.audiowaveform.model.WaveformAlignment
 import kotlinx.coroutines.launch
 
-const val MinProgress: Float = 0F
-const val MaxProgress: Float = 1F
+private val MinSpikeWidthDp: Dp = 1.dp
+private val MaxSpikeWidthDp: Dp = 24.dp
+private val MinSpikePaddingDp: Dp = 0.dp
+private val MaxSpikePaddingDp: Dp = 12.dp
+private val MinSpikeRadiusDp: Dp = 0.dp
+private val MaxSpikeRadiusDp: Dp = 12.dp
 
-const val MinSpikeHeight: Float = 1F
-const val DefaultGraphicsLayerAlpha: Float = 0.99F
+private const val MinProgress: Float = 0F
+private const val MaxProgress: Float = 1F
+
+private const val MinSpikeHeight: Float = 1F
+private const val DefaultGraphicsLayerAlpha: Float = 0.99F
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -38,14 +46,20 @@ fun AudioWaveform(
     progressBrush: Brush = SolidColor(Color.Blue),
     waveformAlignment: WaveformAlignment = WaveformAlignment.Center,
     amplitudeType: AmplitudeType = AmplitudeType.Avg,
+    onProgressChangeFinished: (() -> Unit)? = null,
     spikeAnimationSpec: AnimationSpec<Float> = tween(500),
     spikeWidth: Dp = 4.dp,
     spikeRadius: Dp = 2.dp,
     spikePadding: Dp = 1.dp,
     progress: Float = 0F,
     amplitudes: List<Int>,
-    onProgressChanged: (Float) -> Unit
+    onProgressChange: (Float) -> Unit
 ) {
+    val _progress = remember(progress) { progress.coerceIn(MinProgress, MaxProgress) }
+    val _spikeWidth = remember(spikeWidth) { spikeWidth.coerceIn(MinSpikeWidthDp, MaxSpikeWidthDp) }
+    val _spikePadding = remember(spikePadding) { spikePadding.coerceIn(MinSpikePaddingDp, MaxSpikePaddingDp) }
+    val _spikeRadius = remember(spikeRadius) { spikeRadius.coerceIn(MinSpikeRadiusDp, MaxSpikeRadiusDp) }
+    val _spikeTotalWidth = remember(spikeWidth, spikePadding) { _spikeWidth + _spikePadding }
     var canvasSize by remember { mutableStateOf(Size(0f, 0f)) }
     var spikes by remember { mutableStateOf(0F) }
     val pixelAmplitudes = remember(amplitudes, spikes, amplitudeType) {
@@ -63,40 +77,47 @@ fun AudioWaveform(
             .requiredHeight(48.dp)
             .graphicsLayer(alpha = DefaultGraphicsLayerAlpha)
             .pointerInteropFilter {
-                when (it.action) {
+                return@pointerInteropFilter when (it.action) {
                     MotionEvent.ACTION_DOWN,
                     MotionEvent.ACTION_MOVE -> {
                         if (it.x in 0F..canvasSize.width) {
-                            onProgressChanged(it.x / canvasSize.width)
-                            return@pointerInteropFilter true
-                        }
+                            onProgressChange(it.x / canvasSize.width)
+                            true
+                        } else false
                     }
+                    MotionEvent.ACTION_UP -> {
+                        onProgressChangeFinished?.invoke()
+                        true
+                    }
+                    else -> false
                 }
-                return@pointerInteropFilter false
             }
             .then(modifier)
     ) {
         canvasSize = size
-        spikes = size.width / (spikeWidth.toPx() + spikePadding.toPx())
+        spikes = size.width / _spikeTotalWidth.toPx()
         pixelAmplitudes.forEachIndexed { index, amplitude ->
             drawRoundRect(
                 brush = waveformBrush,
                 topLeft = Offset(
-                    x = index * (spikeWidth.toPx() + spikePadding.toPx()),
+                    x = index * _spikeTotalWidth.toPx(),
                     y = when(waveformAlignment) {
                         WaveformAlignment.Top -> 0F
                         WaveformAlignment.Bottom -> size.height - amplitude
                         WaveformAlignment.Center -> size.height / 2F - amplitude / 2F
                     }
                 ),
-                size = Size(spikeWidth.toPx(), amplitude),
-                cornerRadius = CornerRadius(spikeRadius.toPx(), spikeRadius.toPx()),
+                size = Size(
+                    width = _spikeWidth.toPx(),
+                    height = amplitude
+                ),
+                cornerRadius = CornerRadius(_spikeRadius.toPx(), _spikeRadius.toPx()),
                 style = style
             )
             drawRect(
                 brush = progressBrush,
                 size = Size(
-                    width = progress.coerceIn(MinProgress, MaxProgress) * size.width,
+                    width = _progress * size.width,
                     height = size.height
                 ),
                 blendMode = BlendMode.SrcAtop

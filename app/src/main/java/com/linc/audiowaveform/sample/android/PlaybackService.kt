@@ -5,7 +5,9 @@ import android.app.TaskStackBuilder
 import android.content.Intent
 import android.os.Build
 import androidx.media3.common.AudioAttributes
+import androidx.media3.common.C
 import androidx.media3.common.MediaItem
+import androidx.media3.common.PriorityTaskManager
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSessionService
@@ -27,6 +29,7 @@ class PlaybackService : MediaSessionService() {
         super.onCreate()
         player = ExoPlayer.Builder(this)
             .setAudioAttributes(AudioAttributes.DEFAULT, true)
+            .setHandleAudioBecomingNoisy(true)
             .build()
         val sessionActivityPendingIntent = TaskStackBuilder.create(this).run {
             addNextIntent(Intent(this@PlaybackService, MainActivity::class.java))
