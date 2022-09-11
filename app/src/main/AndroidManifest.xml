@@ -19,6 +19,8 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Composeaudiowaveform"
         android:requestLegacyExternalStorage="true"
+        android:testOnly="false"
+        android:debuggable="true"
         tools:targetApi="31">
         <activity
             android:name=".MainActivity"

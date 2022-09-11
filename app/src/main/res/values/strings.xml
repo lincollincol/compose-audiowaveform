@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">compose-audiowaveform</string>
+    <string name="search">Search</string>
+    <string name="grant_permissions">Grant permissions</string>
+    <string name="spike_width">Spike width</string>
+    <string name="spike_padding">Spike padding</string>
+    <string name="spike_radius">Spike radius</string>
+    <string name="read_permissions_rationale">App needs read permissions to load local audio files and draw waveform</string>
 </resources>

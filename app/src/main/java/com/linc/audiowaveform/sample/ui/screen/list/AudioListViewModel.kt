@@ -5,43 +5,62 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.paging.PagingData
-import androidx.paging.cachedIn
-import androidx.paging.compose.LazyPagingItems
-import androidx.paging.compose.collectAsLazyPagingItems
-import androidx.paging.map
 import com.linc.audiowaveform.sample.data.AudioRepository
 import com.linc.audiowaveform.sample.model.LocalAudio
 import com.linc.audiowaveform.sample.model.NavDestination
+import com.linc.audiowaveform.sample.model.PermissionsState
 import com.linc.audiowaveform.sample.ui.screen.list.model.AudioListUiState
-import com.linc.audiowaveform.sample.ui.screen.list.model.SingleAudioUiState
 import com.linc.audiowaveform.sample.ui.screen.list.model.toUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flatMap
-import kotlinx.coroutines.flow.flatMapConcat
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import java.util.Collections.list
 import javax.inject.Inject
-import kotlin.time.Duration
 
 @HiltViewModel
 class AudioListViewModel @Inject constructor(
-    audioRepository: AudioRepository
+    private val audioRepository: AudioRepository
 ) : ViewModel() {
 
     var navDestination: String? by mutableStateOf(null)
         private set
 
-    val audioItemsUiState: Flow<PagingData<SingleAudioUiState>> =
-        audioRepository.loadAudioFiles()
-            .map { pagedData ->
-                pagedData.map { localAudio ->
-                    localAudio.toUiState { selectAudio(localAudio) }
-                }
+    var uiState: AudioListUiState by mutableStateOf(AudioListUiState())
+        private set
+
+    private var loadAudioJob: Job? = null
+
+    fun updateSearchQuery(query: String) {
+        uiState = uiState.copy(searchQuery = query)
+        loadAudioFiles(query)
+    }
+
+    fun updatePermissionsState(granted: Boolean) {
+        uiState = uiState.copy(
+            permissionsState = when {
+                granted -> PermissionsState.Granted
+                else -> PermissionsState.Denied
             }
-            .cachedIn(viewModelScope)
+        )
+        if(granted) {
+            loadAudioFiles()
+        }
+    }
+
+    private fun loadAudioFiles(query: String = "") {
+        loadAudioJob?.cancel()
+        loadAudioJob = viewModelScope.launch {
+            try {
+                uiState = uiState.copy(isLoadingAudios = true)
+                val audioFiles = audioRepository.loadAudioFiles(query)
+                    .map { it.toUiState { selectAudio(it) } }
+                uiState = uiState.copy(audioFiles = audioFiles)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            } finally {
+                uiState = uiState.copy(isLoadingAudios = false)
+            }
+        }
+    }
 
     private fun selectAudio(localAudio: LocalAudio) {
         navDestination = NavDestination.AudioWaveform.createRoute(localAudio.id)

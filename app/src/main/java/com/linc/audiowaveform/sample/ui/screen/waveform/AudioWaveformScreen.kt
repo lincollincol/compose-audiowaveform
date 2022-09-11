@@ -1,5 +1,6 @@
 package com.linc.audiowaveform.sample.ui.screen.waveform
 
+import android.widget.Space
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -10,6 +11,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -17,9 +20,9 @@ import com.linc.audiowaveform.AudioWaveform
 import com.linc.audiowaveform.model.AmplitudeType
 import com.linc.audiowaveform.model.WaveformAlignment
 import com.linc.audiowaveform.sample.R
-import com.linc.audiowaveform.sample.model.getMockPalettes
-import com.linc.audiowaveform.sample.model.getMockStyles
 import com.linc.audiowaveform.sample.ui.screen.waveform.model.AudioWaveformUiState
+import com.linc.audiowaveform.sample.ui.screen.waveform.model.getMockPalettes
+import com.linc.audiowaveform.sample.ui.screen.waveform.model.getMockStyles
 import com.linc.audiowaveform.sample.ui.theme.ComposeaudiowaveformTheme
 
 @Composable
@@ -73,8 +76,10 @@ fun AudioWaveformScreen(
                 Text(
                     modifier = Modifier.fillMaxWidth(),
                     text = uiState.audioDisplayName,
-                    style = MaterialTheme.typography.h5
+                    style = MaterialTheme.typography.h6,
+                    textAlign = TextAlign.Center
                 )
+                Divider(modifier = Modifier.padding(vertical = 8.dp))
                 AudioWaveform(
                     modifier = Modifier.fillMaxWidth(),
                     style = waveformStyle.style,
@@ -95,24 +100,26 @@ fun AudioWaveformScreen(
                         scrollEnabled = true
                     }
                 )
+                Divider(modifier = Modifier.padding(vertical = 8.dp))
                 LabelSlider(
-                    text = "Spike width",
+                    text = stringResource(id = R.string.spike_width),
                     value = spikeWidth,
                     onValueChange = { spikeWidth = it },
                     valueRange = 1.dp.value..24.dp.value
                 )
                 LabelSlider(
-                    text = "Spike padding",
+                    text = stringResource(id = R.string.spike_padding),
                     value = spikePadding,
                     onValueChange = { spikePadding = it },
                     valueRange = 0.dp.value..12.dp.value
                 )
                 LabelSlider(
-                    text = "Corner radius",
+                    text = stringResource(id = R.string.spike_radius),
                     value = spikeCornerRadius,
                     onValueChange = { spikeCornerRadius = it },
                     valueRange = 0.dp.value..12.dp.value
                 )
+                Divider(modifier = Modifier.padding(vertical = 8.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly
@@ -151,6 +158,7 @@ fun AudioWaveformScreen(
                         )
                     }
                 }
+                Divider(modifier = Modifier.padding(vertical = 8.dp))
                 colorPalettes.forEach {
                     ColorPaletteItem(
                         selected = it.label == colorPalettes[colorPaletteIndex].label,

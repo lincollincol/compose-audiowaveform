@@ -21,7 +21,6 @@ import javax.inject.Inject
 
 class LocalMediaDataSource @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val amplituda: Amplituda,
     private val ioDispatcher: CoroutineDispatcher
 ) {
 
@@ -35,10 +34,6 @@ class LocalMediaDataSource @Inject constructor(
         MediaStore.Audio.AudioColumns.SIZE
     )
 
-    suspend fun loadAudioAmplitudes(path: String): List<Int> {
-        return amplituda.processAudio(path, Cache.withParams(Cache.REUSE)).get().amplitudesAsList()
-    }
-
     suspend fun loadAudioById(id: String): LocalAudio? = withContext(ioDispatcher) {
         val mediaContentUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
         val selection = MediaStore.Audio.Media._ID + "=?"
@@ -49,19 +44,15 @@ class LocalMediaDataSource @Inject constructor(
         }
     }
 
-    suspend fun loadAudioFiles(
-        page: Int,
-        pageSize: Int
-    ) : List<LocalAudio?> = withContext(ioDispatcher) {
+    suspend fun loadAudioFiles(query: String) : List<LocalAudio> = withContext(ioDispatcher) {
         val contentUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
         val content = mutableListOf<LocalAudio?>()
-        val offset = (page - 1) * pageSize
         val cursor = contentResolver.query(
             contentUri,
             audioProjection,
+            MediaStore.Audio.Media.DISPLAY_NAME + " LIKE '%$query%'",
             null,
-            null,
-            "${MediaStore.MediaColumns.DATE_ADDED} DESC LIMIT $pageSize OFFSET $offset"
+            "${MediaStore.MediaColumns.DATE_ADDED} DESC"
         )
         cursor?.use {
             if (it.moveToFirst()) {
@@ -70,7 +61,7 @@ class LocalMediaDataSource @Inject constructor(
                 } while (it.moveToNext())
             }
         }
-        return@withContext content
+        return@withContext content.filterNotNull()
     }
 
     private fun Cursor.toLocalAudio(): LocalAudio? {

@@ -19,6 +19,7 @@ android {
         vectorDrawables {
             useSupportLibrary true
         }
+        setProperty("archivesBaseName", "audiowaveform_sample_$versionCode")
     }
 
     buildTypes {
@@ -72,10 +73,6 @@ dependencies {
     implementation "androidx.media3:media3-exoplayer:$media3_version"
     implementation "androidx.media3:media3-session:$media3_version"
     implementation "androidx.media3:media3-ui:$media3_version"
-
-    def paging_version = "3.1.1"
-    implementation "androidx.paging:paging-runtime:$paging_version"
-    implementation "androidx.paging:paging-compose:1.0.0-alpha16"
 
     implementation 'androidx.activity:activity-compose:1.5.1'
     implementation 'com.github.lincollincol:amplituda:2.2.1'

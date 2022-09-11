@@ -1,4 +1,4 @@
-package com.linc.audiowaveform.sample.model
+package com.linc.audiowaveform.sample.ui.screen.waveform.model
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Brush

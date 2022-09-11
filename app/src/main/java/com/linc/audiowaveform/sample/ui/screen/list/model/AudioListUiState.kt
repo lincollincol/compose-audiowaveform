@@ -1,8 +1,10 @@
 package com.linc.audiowaveform.sample.ui.screen.list.model
 
-import androidx.paging.PagingData
-import androidx.paging.compose.LazyPagingItems
+import com.linc.audiowaveform.sample.model.PermissionsState
 
 data class AudioListUiState(
-    val audioFiles: PagingData<SingleAudioUiState> = PagingData.empty()
+    val permissionsState: PermissionsState = PermissionsState.Unknown,
+    val searchQuery: String = "",
+    val audioFiles: List<SingleAudioUiState> = emptyList(),
+    val isLoadingAudios: Boolean = false
 )
