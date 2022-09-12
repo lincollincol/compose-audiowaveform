@@ -76,4 +76,6 @@ dependencies {
 
     implementation 'androidx.activity:activity-compose:1.5.1'
     implementation 'com.github.lincollincol:amplituda:2.2.1'
+    implementation 'org.jodd:jodd-util:6.1.0'
+
 }

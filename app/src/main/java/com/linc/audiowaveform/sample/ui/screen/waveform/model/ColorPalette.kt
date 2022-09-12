@@ -38,7 +38,7 @@ fun getMockPalettes() = listOf(
         SolidColor(Color.LightGray)
     ),
     ColorPalette(
-        "IntuitivePurple",
+        "IntuitivePink",
         Brush.infiniteHorizontalGradient(
             colors = listOf(Color(0xFFFC8B6A), Color(0xFFE10467)),
             width = 192.dp.value
