@@ -1,6 +1,8 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
+    id 'kotlin-kapt'
+    id 'dagger.hilt.android.plugin'
 }
 
 android {
@@ -17,6 +19,7 @@ android {
         vectorDrawables {
             useSupportLibrary true
         }
+        setProperty("archivesBaseName", "audiowaveform_sample_$versionCode")
     }
 
     buildTypes {
@@ -47,12 +50,32 @@ android {
 
 dependencies {
     implementation project(':audiowaveform')
-    implementation 'androidx.core:core-ktx:1.8.0'
+
+    implementation 'androidx.core:core-ktx:1.9.0'
+
+    /* Compose */
     implementation "androidx.compose.ui:ui:$compose_version"
     implementation "androidx.compose.material:material:$compose_version"
     implementation "androidx.compose.ui:ui-tooling-preview:$compose_version"
-    implementation 'androidx.activity:activity-compose:1.5.1'
     debugImplementation "androidx.compose.ui:ui-tooling:$compose_version"
     debugImplementation "androidx.compose.ui:ui-test-manifest:$compose_version"
+
+    /* Navigation */
+    implementation "androidx.navigation:navigation-compose:2.5.2"
+    implementation 'androidx.hilt:hilt-navigation-compose:1.0.0'
+
+    /* Hilt */
+    implementation "com.google.dagger:hilt-android:$hilt_version"
+    kapt "com.google.dagger:hilt-compiler:$hilt_version"
+
+    /* Media3 */
+    def media3_version = "1.0.0-beta01"
+    implementation "androidx.media3:media3-exoplayer:$media3_version"
+    implementation "androidx.media3:media3-session:$media3_version"
+    implementation "androidx.media3:media3-ui:$media3_version"
+
+    implementation 'androidx.activity:activity-compose:1.5.1'
     implementation 'com.github.lincollincol:amplituda:2.2.1'
+    implementation 'org.jodd:jodd-util:6.1.0'
+
 }
