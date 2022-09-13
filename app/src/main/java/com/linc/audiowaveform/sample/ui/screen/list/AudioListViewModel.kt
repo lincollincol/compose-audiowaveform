@@ -46,12 +46,12 @@ class AudioListViewModel @Inject constructor(
         }
     }
 
-    private fun loadAudioFiles(query: String = "") {
+    private fun loadAudioFiles(query: String? = null) {
         loadAudioJob?.cancel()
         loadAudioJob = viewModelScope.launch {
             try {
                 uiState = uiState.copy(isLoadingAudios = true)
-                val audioFiles = audioRepository.loadAudioFiles(query)
+                val audioFiles = audioRepository.loadAudioFiles(query ?: uiState.searchQuery)
                     .map { it.toUiState { selectAudio(it) } }
                 uiState = uiState.copy(audioFiles = audioFiles)
             } catch (e: Exception) {
