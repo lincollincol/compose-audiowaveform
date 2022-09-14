@@ -18,19 +18,6 @@ AudioWaveform is fully compatible with [Amplituda](https://github.com/lincollinc
   <img src="https://github.com/lincollincol/compose-audiowaveform/blob/develop/readme/waveforms.png" width="100%"/>
 </p>
 
-## Usage
-#### Example
-``` kotlin
-var waveformProgress by remember {
-  mutableStateOf(0F)
-}
-AudioWaveform(
-  amplitudes = samples,
-  progress = waveformProgress,
-  onProgressChange = { progress = it }
-)
-``` 
-
 ## Download
 ``` groovy
 allprojects {
@@ -43,6 +30,64 @@ allprojects {
 dependencies {
   implementation 'com.github.lincollincol:compose-audiowaveform:x.y.z'
 }
+```
+
+## Usage
+#### Common way
+``` kotlin
+var waveformProgress by remember { mutableStateOf(0F) }
+AudioWaveform(
+  amplitudes = amplitudes,
+  progress = waveformProgress,
+  onProgressChange = { waveformProgress = it }
+)
+``` 
+
+#### Custom color
+* `SolidColor()` - single color `Brush`.
+* `Brush.horizontalGradient()`, `Brush.verticalGradient()` (and more) - default `Brush` static gradient implementations.
+* `Brush.infinite*Gradient()` (where * is one of `linear`, `horizontal` or `vertical`)  - infinite animated gradient. This is AudioWaveform library extension functions created with [this article](https://medium.com/androiddevelopers/animating-brush-text-coloring-in-compose-%EF%B8%8F-26ae99d9b402).
+``` kotlin
+var waveformProgress by remember { mutableStateOf(0F) }
+
+val colorBrush = SolidColor(Color.Magenta)
+
+val staticGradientBrush = Brush.linearGradient(colors = listOf(Color(0xff22c1c3), Color(0xfffdbb2d)))
+
+val animatedGradientBrush = Brush.infiniteLinearGradient(
+  colors = listOf(Color(0xff22c1c3), Color(0xfffdbb2d)),
+  animation = tween(durationMillis = 6000, easing = LinearEasing),
+  width = 128F
+)
+
+AudioWaveform(
+  progress = waveformProgress,
+  progressBrush = brush,
+  amplitudes = amplitudes,
+  onProgressChange = { waveformProgress = it }
+)
+``` 
+
+#### All paramteres
+``` kotlin
+var waveformProgress by remember { mutableStateOf(0F) }
+AudioWaveform(
+  modifier = Modifier.fillMaxWidth(),
+  // Spike DrawStyle: Fill or Stroke 
+  style = Fill,
+  waveformAlignment = WaveformAlignment.Center, 
+  amplitudeType = AmplitudeType.Avg,
+  // Colors could be updated with Brush API
+  progressBrush = SolidColor(Color.Magenta),
+  waveformBrush = SolidColor(Color.LightGray),
+  spikeWidth = 4.dp,
+  spikePadding = 2.dp,
+  spikeRadius = 4.dp,
+  progress = waveformProgress,
+  amplitudes = amplitudes,
+  onProgressChange = { waveformProgress = it },
+  onProgressChangeFinished = {}
+)
 ```
 
 ## Sample app
