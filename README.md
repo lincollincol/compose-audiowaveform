@@ -68,7 +68,7 @@ AudioWaveform(
 )
 ``` 
 
-#### All paramteres
+#### All parameters
 ``` kotlin
 var waveformProgress by remember { mutableStateOf(0F) }
 AudioWaveform(
@@ -91,12 +91,19 @@ AudioWaveform(
 ```
 
 ## Sample app
-You could also try [sample app](https://github.com/lincollincol/compose-audiowaveform/tree/develop/app), which demonstrateі all AudioWaveform library features. 
-Wavefrom from sample app also synchronized with [Media3](https://developer.android.com/jetpack/androidx/releases/media3).
+You could also try [sample app](https://github.com/lincollincol/compose-audiowaveform/tree/develop/app), which demonstrates all AudioWaveform library features. 
+Waveform from sample app is also synchronized with [Media3](https://developer.android.com/jetpack/androidx/releases/media3).
+Download sample app apk [here](https://github.com/lincollincol/compose-audiowaveform/blob/develop/readme/audiowaveform_sample.apk)
 <p align="center">
   <img src="https://github.com/lincollincol/compose-audiowaveform/blob/develop/readme/sample_app.gif" width="25%"/>
 </p>
 
+## Amplituda compatibility
+AudioWaveform requires `amplitudes` to draw waveform. This parameter is a list of integers, which represents audio data.
+You can process the audio file by yourself or use already existing library [Amplituda](https://github.com/lincollincol/Amplituda).  
+[Amplituda](https://github.com/lincollincol/Amplituda) is a fast audio processing library, which provides you data for drawing waveforms.
+Library has [caching](https://github.com/lincollincol/Amplituda#-cache-output-data) and [compressing](https://github.com/lincollincol/Amplituda#-compress-output-data) processed data features out of the box.
+Here is [Amplituda library usage](https://github.com/lincollincol/compose-audiowaveform/blob/develop/app/src/main/java/com/linc/audiowaveform/sample/data/AudioManager.kt) in a sample app
 
 ## License
 ```

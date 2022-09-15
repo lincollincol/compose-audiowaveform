@@ -10,6 +10,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -100,6 +103,28 @@ fun AudioWaveformScreen(
                         scrollEnabled = true
                     }
                 )
+
+                AudioWaveform(
+                    modifier = Modifier.fillMaxWidth(),
+                    style = Fill,
+                    waveformAlignment = WaveformAlignment.Center,
+                    amplitudeType = AmplitudeType.Avg,
+                    progressBrush = SolidColor(Color.Magenta),
+                    waveformBrush = SolidColor(Color.LightGray),
+                    spikeWidth = 4.dp,
+                    spikePadding = 2.dp,
+                    spikeRadius = 4.dp,
+                    progress = uiState.progress,
+                    amplitudes = uiState.amplitudes,
+                    onProgressChange = {
+                        scrollEnabled = false
+                        onProgressChange(it)
+                    },
+                    onProgressChangeFinished = {
+                        scrollEnabled = true
+                    }
+                )
+
                 Divider(modifier = Modifier.padding(vertical = 8.dp))
                 LabelSlider(
                     text = stringResource(id = R.string.spike_width),
