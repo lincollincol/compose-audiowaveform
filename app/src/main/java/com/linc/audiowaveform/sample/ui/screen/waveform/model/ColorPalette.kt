@@ -23,8 +23,8 @@ fun getMockPalettes() = listOf(
     ColorPalette("Blue/Yellow", SolidColor(Color.Blue), SolidColor(Color.Yellow)),
     ColorPalette("White/Red", SolidColor(Color.White), SolidColor(Color.Red)),
     ColorPalette(
-        "AquaMarine",
-        Brush.horizontalGradient(listOf(Color(0xFF1A2980), Color(0xFF26D0CE))),
+        "ComposeColors",
+        Brush.horizontalGradient(listOf(Color(0xFF136FC3), Color(0xFF76EF66))),
         SolidColor(Color.LightGray)
     ),
     ColorPalette(
