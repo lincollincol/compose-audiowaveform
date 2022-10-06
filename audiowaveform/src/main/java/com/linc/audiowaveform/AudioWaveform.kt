@@ -22,6 +22,8 @@ import androidx.compose.ui.unit.coerceIn
 import androidx.compose.ui.unit.dp
 import com.linc.audiowaveform.model.AmplitudeType
 import com.linc.audiowaveform.model.WaveformAlignment
+import kotlin.math.ceil
+import kotlin.math.roundToInt
 
 private val MinSpikeWidthDp: Dp = 1.dp
 private val MaxSpikeWidthDp: Dp = 24.dp
@@ -62,13 +64,15 @@ fun AudioWaveform(
     var canvasSize by remember { mutableStateOf(Size(0f, 0f)) }
     var spikes by remember { mutableStateOf(0F) }
     val pixelAmplitudes = remember(amplitudes, spikes, amplitudeType) {
-        getPixelAmplitudes(
+        val res = getPixelAmplitudes(
             amplitudeType = amplitudeType,
             amplitudes = amplitudes,
             spikes = spikes.toInt(),
             minHeight = MinSpikeHeight,
             maxHeight = canvasSize.height.coerceAtLeast(MinSpikeHeight)
         )
+        println("amplitudes count : ${res.count()}")
+        res
     }.map { animateFloatAsState(it, spikeAnimationSpec).value }
     Canvas(
         modifier = Modifier
@@ -132,16 +136,20 @@ private fun getPixelAmplitudes(
     minHeight: Float,
     maxHeight: Float
 ): List<Float> {
-    return when {
-        amplitudes.isEmpty() || spikes == 0 -> List(spikes) { minHeight }
-        amplitudes.count() < spikes -> amplitudes.map(Int::toFloat)
-        else -> amplitudes.chunked(amplitudes.count() / spikes)
-            .map {
-                when(amplitudeType) {
-                    AmplitudeType.Avg -> it.average()
-                    AmplitudeType.Max -> it.max()
-                    AmplitudeType.Min -> it.min()
-                }.toFloat().times(2).coerceIn(minHeight, maxHeight)
-            }
+    if(amplitudes.isEmpty() || spikes == 0) {
+        return List(spikes) { minHeight }
     }
+    if(amplitudes.count() < spikes) {
+        return amplitudes.map(Int::toFloat)
+    }
+    return chunkedToSize(
+        amplitudes.map { it.toFloat() },
+        spikes
+    ) {
+        when(amplitudeType) {
+            AmplitudeType.Avg -> it.average().toFloat()
+            AmplitudeType.Max -> it.max()
+            AmplitudeType.Min -> it.min()
+        }
+    }.map { it.times(2).coerceIn(minHeight, maxHeight) }
 }

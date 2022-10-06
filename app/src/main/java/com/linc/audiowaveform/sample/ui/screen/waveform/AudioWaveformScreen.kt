@@ -103,28 +103,6 @@ fun AudioWaveformScreen(
                         scrollEnabled = true
                     }
                 )
-
-                AudioWaveform(
-                    modifier = Modifier.fillMaxWidth(),
-                    style = Fill,
-                    waveformAlignment = WaveformAlignment.Center,
-                    amplitudeType = AmplitudeType.Avg,
-                    progressBrush = SolidColor(Color.Magenta),
-                    waveformBrush = SolidColor(Color.LightGray),
-                    spikeWidth = 4.dp,
-                    spikePadding = 2.dp,
-                    spikeRadius = 4.dp,
-                    progress = uiState.progress,
-                    amplitudes = uiState.amplitudes,
-                    onProgressChange = {
-                        scrollEnabled = false
-                        onProgressChange(it)
-                    },
-                    onProgressChangeFinished = {
-                        scrollEnabled = true
-                    }
-                )
-
                 Divider(modifier = Modifier.padding(vertical = 8.dp))
                 LabelSlider(
                     text = stringResource(id = R.string.spike_width),
