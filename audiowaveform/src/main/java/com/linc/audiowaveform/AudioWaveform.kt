@@ -35,6 +35,7 @@ private const val MaxProgress: Float = 1F
 
 private const val MinSpikeHeight: Float = 1F
 private const val DefaultGraphicsLayerAlpha: Float = 0.99F
+private const val AmplitudeMultiplier: Float = 2F
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -61,8 +62,8 @@ fun AudioWaveform(
     val _spikeTotalWidth = remember(spikeWidth, spikePadding) { _spikeWidth + _spikePadding }
     var canvasSize by remember { mutableStateOf(Size(0f, 0f)) }
     var spikes by remember { mutableStateOf(0F) }
-    val pixelAmplitudes = remember(amplitudes, spikes, amplitudeType) {
-        getPixelAmplitudes(
+    val spikesAmplitudes = remember(amplitudes, spikes, amplitudeType) {
+        getSpikesAmplitudes(
             amplitudeType = amplitudeType,
             amplitudes = amplitudes,
             spikes = spikes.toInt(),
@@ -95,7 +96,7 @@ fun AudioWaveform(
     ) {
         canvasSize = size
         spikes = size.width / _spikeTotalWidth.toPx()
-        pixelAmplitudes.forEachIndexed { index, amplitude ->
+        spikesAmplitudes.forEachIndexed { index, amplitude ->
             drawRoundRect(
                 brush = waveformBrush,
                 topLeft = Offset(
@@ -125,23 +126,25 @@ fun AudioWaveform(
     }
 }
 
-private fun getPixelAmplitudes(
+private fun getSpikesAmplitudes(
     amplitudeType: AmplitudeType,
     amplitudes: List<Int>,
     spikes: Int,
     minHeight: Float,
     maxHeight: Float
 ): List<Float> {
-    return when {
-        amplitudes.isEmpty() || spikes == 0 -> List(spikes) { minHeight }
-        amplitudes.count() < spikes -> amplitudes.map(Int::toFloat)
-        else -> amplitudes.chunked(amplitudes.count() / spikes)
-            .map {
-                when(amplitudeType) {
-                    AmplitudeType.Avg -> it.average()
-                    AmplitudeType.Max -> it.max()
-                    AmplitudeType.Min -> it.min()
-                }.toFloat().times(2).coerceIn(minHeight, maxHeight)
-            }
+    if(amplitudes.isEmpty() || spikes == 0) {
+        return List(spikes) { minHeight }
     }
+    if(amplitudes.count() < spikes) {
+        return amplitudes.map(Int::toFloat)
+    }
+    return amplitudes.map(Int::toFloat)
+        .chunkedToSize(spikes) {
+            when(amplitudeType) {
+                AmplitudeType.Avg -> it.average()
+                AmplitudeType.Max -> it.max()
+                AmplitudeType.Min -> it.min()
+            }.toFloat().times(AmplitudeMultiplier).coerceIn(minHeight, maxHeight)
+        }
 }
