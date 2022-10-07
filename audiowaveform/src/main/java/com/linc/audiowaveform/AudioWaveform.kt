@@ -22,8 +22,6 @@ import androidx.compose.ui.unit.coerceIn
 import androidx.compose.ui.unit.dp
 import com.linc.audiowaveform.model.AmplitudeType
 import com.linc.audiowaveform.model.WaveformAlignment
-import kotlin.math.ceil
-import kotlin.math.roundToInt
 
 private val MinSpikeWidthDp: Dp = 1.dp
 private val MaxSpikeWidthDp: Dp = 24.dp
@@ -37,6 +35,7 @@ private const val MaxProgress: Float = 1F
 
 private const val MinSpikeHeight: Float = 1F
 private const val DefaultGraphicsLayerAlpha: Float = 0.99F
+private const val AmplitudeMultiplier: Float = 2F
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -63,16 +62,14 @@ fun AudioWaveform(
     val _spikeTotalWidth = remember(spikeWidth, spikePadding) { _spikeWidth + _spikePadding }
     var canvasSize by remember { mutableStateOf(Size(0f, 0f)) }
     var spikes by remember { mutableStateOf(0F) }
-    val pixelAmplitudes = remember(amplitudes, spikes, amplitudeType) {
-        val res = getPixelAmplitudes(
+    val spikesAmplitudes = remember(amplitudes, spikes, amplitudeType) {
+        getSpikesAmplitudes(
             amplitudeType = amplitudeType,
             amplitudes = amplitudes,
             spikes = spikes.toInt(),
             minHeight = MinSpikeHeight,
             maxHeight = canvasSize.height.coerceAtLeast(MinSpikeHeight)
         )
-        println("amplitudes count : ${res.count()}")
-        res
     }.map { animateFloatAsState(it, spikeAnimationSpec).value }
     Canvas(
         modifier = Modifier
@@ -99,7 +96,7 @@ fun AudioWaveform(
     ) {
         canvasSize = size
         spikes = size.width / _spikeTotalWidth.toPx()
-        pixelAmplitudes.forEachIndexed { index, amplitude ->
+        spikesAmplitudes.forEachIndexed { index, amplitude ->
             drawRoundRect(
                 brush = waveformBrush,
                 topLeft = Offset(
@@ -129,7 +126,7 @@ fun AudioWaveform(
     }
 }
 
-private fun getPixelAmplitudes(
+private fun getSpikesAmplitudes(
     amplitudeType: AmplitudeType,
     amplitudes: List<Int>,
     spikes: Int,
@@ -142,14 +139,12 @@ private fun getPixelAmplitudes(
     if(amplitudes.count() < spikes) {
         return amplitudes.map(Int::toFloat)
     }
-    return chunkedToSize(
-        amplitudes.map { it.toFloat() },
-        spikes
-    ) {
-        when(amplitudeType) {
-            AmplitudeType.Avg -> it.average().toFloat()
-            AmplitudeType.Max -> it.max()
-            AmplitudeType.Min -> it.min()
+    return amplitudes.map(Int::toFloat)
+        .chunkedToSize(spikes) {
+            when(amplitudeType) {
+                AmplitudeType.Avg -> it.average()
+                AmplitudeType.Max -> it.max()
+                AmplitudeType.Min -> it.min()
+            }.toFloat().times(AmplitudeMultiplier).coerceIn(minHeight, maxHeight)
         }
-    }.map { it.times(2).coerceIn(minHeight, maxHeight) }
 }

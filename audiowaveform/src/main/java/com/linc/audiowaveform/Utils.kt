@@ -3,18 +3,17 @@ package com.linc.audiowaveform
 import kotlin.math.ceil
 import kotlin.math.roundToInt
 
-internal fun chunkedToSize(
-    samples: List<Float>,
-    spikes: Int,
-    transform: (List<Float>) -> Float
-): List<Float> {
-    val size = samples.count() / spikes
-    val remainder = samples.count() % spikes
-    val remainderIndex = ceil(samples.count().safeDiv(remainder)).roundToInt()
-    val filteredSamples = samples
-        .filterIndexed { index, _ -> remainderIndex == 0 || index % remainderIndex != 0 }
-        .chunked(size, transform)
-    return if(filteredSamples.count() != spikes) chunkedToSize(filteredSamples, spikes, transform) else filteredSamples
+internal fun <T> Iterable<T>.chunkedToSize(size: Int, transform: (List<T>) -> T): List<T> {
+    val chunkSize = count() / size
+    val remainder = count() % size
+    val remainderIndex = ceil(count().safeDiv(remainder)).roundToInt()
+    val chunkIteration = filterIndexed { index, _ ->
+        remainderIndex == 0 || index % remainderIndex != 0
+    }.chunked(chunkSize, transform)
+    return when (size) {
+        chunkIteration.count() -> chunkIteration
+        else -> chunkIteration.chunkedToSize(size, transform)
+    }
 }
 
 internal fun Int.safeDiv(value: Int): Float {
