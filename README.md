@@ -1,6 +1,7 @@
 # Compose AudioWaveform<img align="right" src="https://github.com/lincollincol/compose-audiowaveform/blob/develop/readme/icon.png" width="25%">  
 
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/lincollincol/compose-audiowaveform)
+[![](https://jitpack.io/v/lincollincol/compose-audiowaveform/month.svg)](https://jitpack.io/#lincollincol/compose-audiowaveform)
 ![GitHub](https://img.shields.io/github/license/lincollincol/compose-audiowaveform)
 
 ![GitHub followers](https://img.shields.io/github/followers/lincollincol?style=social)
