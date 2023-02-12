@@ -3,7 +3,12 @@ package com.linc.audiowaveform
 import kotlin.math.ceil
 import kotlin.math.roundToInt
 
-internal fun <T> Iterable<T>.chunkedToSize(size: Int, transform: (List<T>) -> T): List<T> {
+internal fun <T> Iterable<T>.fillToSize(size: Int, transform: (List<T>) -> T): List<T> {
+    val capacity = ceil(size.safeDiv(count())).roundToInt()
+    return map { data -> List(capacity) { data } }.flatten().chunkToSize(size, transform)
+}
+
+internal fun <T> Iterable<T>.chunkToSize(size: Int, transform: (List<T>) -> T): List<T> {
     val chunkSize = count() / size
     val remainder = count() % size
     val remainderIndex = ceil(count().safeDiv(remainder)).roundToInt()
@@ -12,10 +17,14 @@ internal fun <T> Iterable<T>.chunkedToSize(size: Int, transform: (List<T>) -> T)
     }.chunked(chunkSize, transform)
     return when (size) {
         chunkIteration.count() -> chunkIteration
-        else -> chunkIteration.chunkedToSize(size, transform)
+        else -> chunkIteration.chunkToSize(size, transform)
     }
 }
 
-internal fun Int.safeDiv(value: Int): Float {
+internal fun Iterable<Float>.normalize(min: Float, max: Float): List<Float> {
+    return map { (max-min) * ((it - min()) / (max() - min())) + min }
+}
+
+private fun Int.safeDiv(value: Int): Float {
     return if(value == 0) return 0F else this / value.toFloat()
 }

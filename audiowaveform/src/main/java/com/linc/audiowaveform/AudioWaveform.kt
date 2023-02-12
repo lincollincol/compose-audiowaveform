@@ -35,7 +35,6 @@ private const val MaxProgress: Float = 1F
 
 private const val MinSpikeHeight: Float = 1F
 private const val DefaultGraphicsLayerAlpha: Float = 0.99F
-private const val AmplitudeMultiplier: Float = 2F
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -63,9 +62,8 @@ fun AudioWaveform(
     var canvasSize by remember { mutableStateOf(Size(0f, 0f)) }
     var spikes by remember { mutableStateOf(0F) }
     val spikesAmplitudes = remember(amplitudes, spikes, amplitudeType) {
-        getSpikesAmplitudes(
+        amplitudes.toDrawableAmplitudes(
             amplitudeType = amplitudeType,
-            amplitudes = amplitudes,
             spikes = spikes.toInt(),
             minHeight = MinSpikeHeight,
             maxHeight = canvasSize.height.coerceAtLeast(MinSpikeHeight)
@@ -126,25 +124,25 @@ fun AudioWaveform(
     }
 }
 
-private fun getSpikesAmplitudes(
+private fun List<Int>.toDrawableAmplitudes(
     amplitudeType: AmplitudeType,
-    amplitudes: List<Int>,
     spikes: Int,
     minHeight: Float,
     maxHeight: Float
 ): List<Float> {
+    val amplitudes = map(Int::toFloat)
     if(amplitudes.isEmpty() || spikes == 0) {
         return List(spikes) { minHeight }
     }
-    if(amplitudes.count() < spikes) {
-        return amplitudes.map(Int::toFloat)
+    val transform = { data: List<Float> ->
+        when(amplitudeType) {
+            AmplitudeType.Avg -> data.average()
+            AmplitudeType.Max -> data.max()
+            AmplitudeType.Min -> data.min()
+        }.toFloat().coerceIn(minHeight, maxHeight)
     }
-    return amplitudes.map(Int::toFloat)
-        .chunkedToSize(spikes) {
-            when(amplitudeType) {
-                AmplitudeType.Avg -> it.average()
-                AmplitudeType.Max -> it.max()
-                AmplitudeType.Min -> it.min()
-            }.toFloat().times(AmplitudeMultiplier).coerceIn(minHeight, maxHeight)
-        }
+    return when {
+        spikes > amplitudes.count() -> amplitudes.fillToSize(spikes, transform)
+        else -> amplitudes.chunkToSize(spikes, transform)
+    }.normalize(minHeight, maxHeight)
 }
