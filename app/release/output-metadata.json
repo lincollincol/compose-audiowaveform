@@ -11,9 +11,9 @@
       "type": "SINGLE",
       "filters": [],
       "attributes": [],
-      "versionCode": 1,
-      "versionName": "1.0",
-      "outputFile": "audiowaveform_sample_1-release.apk"
+      "versionCode": 2,
+      "versionName": "1.1.0",
+      "outputFile": "audiowaveform_sample_2-release.apk"
     }
   ],
   "elementType": "File"
