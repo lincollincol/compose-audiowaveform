@@ -65,12 +65,7 @@ class AudioWaveformViewModel @Inject constructor(
 
     private suspend fun loadAudioAmplitudes(localAudio: LocalAudio) {
         try {
-//            val amplitudes = audioRepository.loadAudioAmplitudes(localAudio)
-            val amplitudes = buildList {
-                repeat(100) {
-                    add(it)
-                }
-            }
+            val amplitudes = audioRepository.loadAudioAmplitudes(localAudio)
             uiState = uiState.copy(amplitudes = amplitudes)
         } catch (e: Exception) {
             e.printStackTrace()
