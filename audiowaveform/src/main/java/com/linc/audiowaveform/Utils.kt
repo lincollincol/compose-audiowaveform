@@ -22,9 +22,13 @@ internal fun <T> Iterable<T>.chunkToSize(size: Int, transform: (List<T>) -> T): 
 }
 
 internal fun Iterable<Float>.normalize(min: Float, max: Float): List<Float> {
-    return map { (max-min) * ((it - min()) / (max() - min())) + min }
+    return map { (max-min) * ((it - min()) safeDiv (max() - min())) + min }
 }
 
 private fun Int.safeDiv(value: Int): Float {
     return if(value == 0) return 0F else this / value.toFloat()
+}
+
+private infix fun Float.safeDiv(value: Float): Float {
+    return if (value == 0f) return 0F else this / value
 }
